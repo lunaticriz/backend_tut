@@ -250,6 +250,70 @@ const updateUserDetails = asyncHandler(async (req, res) => {
     }
 })
 
+const updateUserAvatar = asyncHandler(async (req, res) => {
+    try {
+        const avatarPath = req.file.path;
+        if (!avatarPath) {
+            throw new ApiError(400, "Avatar file is required");
+        }
+
+        const avatar = await uploadCloudinary(avatarPath);
+        if(!avatar) {
+            throw new ApiError(400, "Error while uploading avatar file.")
+        }
+
+        const user = await User.findByIdAndUpdate(req.user?._id, 
+            {
+                $set: {
+                    avatar: avatar.url
+                }
+            }, { new: true}
+        ).select("-password");
+
+        return res.status(200).json(
+            new ApiResponse(
+                200, 
+                user, 
+                "Avatar updated successfully"
+            )
+        );
+    } catch (error) {
+        throw new ApiError(400, error?.message || "Unexpected error")
+    }
+})
+
+const updateUserCoverImage = asyncHandler(async (req, res) => {
+    try {
+        const coverImagePath = req.file.path;
+        if (!coverImagePath) {
+            throw new ApiError(400, "Cover image file is required");
+        }
+
+        const coverImage = await uploadCloudinary(avatarPath);
+        if(!coverImage) {
+            throw new ApiError(400, "Error while uploading cover image file.")
+        }
+
+        const user = await User.findByIdAndUpdate(req.user?._id, 
+            {
+                $set: {
+                    coverImage: coverImage.url
+                }
+            }, { new: true}
+        ).select("-password");
+
+        return res.status(200).json(
+            new ApiResponse(
+                200, 
+                user, 
+                "Cover image updated successfully"
+            )
+        );
+    } catch (error) {
+        throw new ApiError(400, error?.message || "Unexpected error")
+    }
+})
+
 export {
     registerUser,
     loginUser,
@@ -257,5 +321,7 @@ export {
     refreshAccessToken,
     changePassword,
     currentUser,
-    updateUserDetails
+    updateUserDetails,
+    updateUserAvatar,
+    updateUserCoverImage
 }
