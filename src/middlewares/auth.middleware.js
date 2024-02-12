@@ -5,7 +5,7 @@ import { ApiError } from "../utils/ApiError.js";
 
 export const verifyJWT = asyncHandler(async (req, res, next) => {
     try {
-        const token = req.cookies?.accessToken || req.headers("Authorization")?.replace("Bearer ", "");
+        const token = req.cookies?.accessToken || req.headers.authorization?.replace("Bearer ", "");
         const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
     
         const user = await User.findById(decoded._id).select("-password -refreshToken");

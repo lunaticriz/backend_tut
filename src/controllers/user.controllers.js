@@ -122,7 +122,7 @@ const logout = asyncHandler(async (req, res)=>{
         await User.findByIdAndUpdate(
             req.user._id, 
             {
-                $set: { refreshToken: undefined}
+                $unset: { refreshToken: 1 } // This will remove from the document.
             }, 
             {new: true}
         )
@@ -132,10 +132,10 @@ const logout = asyncHandler(async (req, res)=>{
         }
     
         return res
-          .status(200)
-          .clearCookie("accessToken", options)
-          .clearCookie("refreshToken", options)
-          .json(new ApiResponse(
+        .status(200)
+        .clearCookie("accessToken", options)
+        .clearCookie("refreshToken", options)
+        .json(new ApiResponse(
                 200, 
                 {}, 
                 "User logged out successfully"
@@ -320,10 +320,9 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
     if(!userName?.trim()) {
         throw new ApiError(400, "username is missing");
     }
-
     const channel = await User.aggregate([
         {
-            $match: { username: userName?.toLowerCase() }
+            $match: { userName: userName?.toLowerCase() }
         },
         {
             $lookup: {
@@ -372,6 +371,7 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
         }
     ]);
 
+    console.log(channel);
     if(!channel?.length) {
         throw new ApiError(404, "Channel does not exist");
     }
@@ -387,7 +387,7 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
 const getUserWatchHistory = asyncHandler(async (req, res)=>{
     const user = await User.aggregate([
         {
-            $match: { _id: mongoose.Types.ObjectId(req.user?._id) }
+            $match: { _id: new mongoose.Types.ObjectId(req.user?._id) }
         },
         {
             $lookup: {
