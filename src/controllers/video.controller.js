@@ -10,8 +10,43 @@ import {
 } from "../utils/cloudinary.js";
 
 const getAllVideos = asyncHandler(async (req, res) => {
-  const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query;
-  //TODO: get all videos based on query, sort, pagination
+  try {
+    const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query;
+    //TODO: get all videos based on query, sort, pagination
+    const match = {};
+    if (query) {
+      match.title = { $regex: new RegExp(query), $options: "i" };
+    }
+    // Construct aggregation pipeline
+    const pipeline = [];
+    pipeline.push({ $match: match });
+    return res.send(pipeline);
+    // Perform aggregation with pagination
+    const options = {
+      page: page,
+      limit: limit,
+    };
+
+    const { docs, totalDocs, totalPages } = await Video.aggregatePaginate(
+      pipeline,
+      options
+    );
+
+    return res.status(200).json(
+      new ApiResponse(
+        200,
+        {
+          totalDocuments: totalDocs,
+          totalPages: totalPages,
+          currentPage: page,
+          videos: docs,
+        },
+        "Videos retrieved successfully"
+      )
+    );
+  } catch (error) {
+    throw new ApiError(400, error?.message || "Unexpected error");
+  }
 });
 
 const publishAVideo = asyncHandler(async (req, res) => {
@@ -63,55 +98,99 @@ const publishAVideo = asyncHandler(async (req, res) => {
 });
 
 const getVideoById = asyncHandler(async (req, res) => {
-  const { videoId } = req.params;
-  //TODO: get video by id
-  if (!isValidObjectId(videoId)) {
-    throw new ApiError(400, "Invalid video id");
+  try {
+    const { videoId } = req.params;
+    //TODO: get video by id
+    if (!isValidObjectId(videoId)) {
+      throw new ApiError(400, "Invalid video id");
+    }
+    const video = await Video.findById(videoId);
+    return res
+      .status(200)
+      .json(new ApiResponse(200, video, "Video fetched successfully."));
+  } catch (error) {
+    throw new ApiError(400, error?.message || "Unexpected error");
   }
-  const video = await Video.findById(videoId);
-  return res
-    .status(200)
-    .json(new ApiResponse(200, video, "Video fetched successfully."));
 });
 
 const updateVideo = asyncHandler(async (req, res) => {
-  const { videoId } = req.params;
-  if (!isValidObjectId(videoId)) {
-    throw new ApiError(400, "Invalid video id");
-  }
-  //TODO: update video details like title, description, thumbnail
-  const { title, description } = req.body;
-  const oldThumbnail = await Video.findById(videoId).select("thumbnail -_id");
-  const thumbnailPath = req.file?.path;
-  let thumbnail;
-  if (thumbnailPath) {
-    await removeFileFromCloudinary(oldThumbnail.thumbnail);
-    thumbnail = await uploadCloudinary(thumbnailPath);
-  }
-  const newThumbnail = !thumbnail?.url ? oldThumbnail.thumbnail : thumbnail.url;
-  const video = await Video.findByIdAndUpdate(
-    videoId,
-    {
-      $set: {
-        title,
-        description,
-        thumbnail: newThumbnail,
+  try {
+    const { videoId } = req.params;
+    if (!isValidObjectId(videoId)) {
+      throw new ApiError(400, "Invalid video id");
+    }
+    //TODO: update video details like title, description, thumbnail
+    const { title, description } = req.body;
+    const oldThumbnail = await Video.findById(videoId).select("thumbnail -_id");
+    const thumbnailPath = req.file?.path;
+    let thumbnail;
+    if (thumbnailPath) {
+      await removeFileFromCloudinary(oldThumbnail.thumbnail);
+      thumbnail = await uploadCloudinary(thumbnailPath);
+    }
+    const newThumbnail = !thumbnail?.url
+      ? oldThumbnail.thumbnail
+      : thumbnail.url;
+    const video = await Video.findByIdAndUpdate(
+      videoId,
+      {
+        $set: {
+          title,
+          description,
+          thumbnail: newThumbnail,
+        },
       },
-    },
-    { new: true }
-  );
-  return res
-    .status(200)
-    .json(new ApiResponse(200, video, "Video updated successfully."));
+      { new: true }
+    );
+    return res
+      .status(200)
+      .json(new ApiResponse(200, video, "Video updated successfully."));
+  } catch (error) {
+    throw new ApiError(400, error?.message || "Unexpected error");
+  }
 });
 
 const deleteVideo = asyncHandler(async (req, res) => {
-  const { videoId } = req.params;
-  //TODO: delete video
+  try {
+    const { videoId } = req.params;
+    //TODO: delete video
+    if (!isValidObjectId(videoId)) {
+      throw new ApiError(400, "Invalid video id");
+    }
+    const video = await Video.findByIdAndDelete(videoId);
+    await removeFileFromCloudinary(video.videoFile, "video");
+    await removeFileFromCloudinary(video.thumbnail);
+    return res
+      .status(200)
+      .json(new ApiResponse(200, {}, "Video deleted successfully."));
+  } catch (error) {
+    throw new ApiError(400, error?.message || "Unexpected error");
+  }
 });
 
 const togglePublishStatus = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
+  if (!isValidObjectId(videoId)) {
+    throw new ApiError(400, "Invalid video id");
+  }
+
+  const video = await Video.findByIdAndUpdate(
+    videoId,
+    {
+      $set: {
+        isPublished: req.body.status,
+      },
+    },
+    { new: true }
+  );
+  if (!video) {
+    throw new ApiError(500, "Internal server error, please try again");
+  }
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, video, "Video publish staus toggles successfully.")
+    );
 });
 
 export {

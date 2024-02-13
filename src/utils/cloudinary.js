@@ -21,12 +21,18 @@ const uploadCloudinary = async (localPath) => {
   }
 };
 
-const removeFileFromCloudinary = async (cloudinaryPath) => {
+const removeFileFromCloudinary = async (cloudinaryPath, resourceType = "") => {
   try {
     if (!cloudinaryPath) return null;
     const splitUrl = cloudinaryPath.split("/");
     const publicId = splitUrl[splitUrl.length - 1].split(".")[0];
-    const result = await cloudinary.uploader.destroy(publicId);
+    let result;
+    if (resourceType !== "") {
+      result = await cloudinary.uploader.destroy(publicId, {
+        resource_type: "video",
+      });
+    }
+    result = await cloudinary.uploader.destroy(publicId);
     return result;
   } catch (error) {
     throw new Error(error.message);
