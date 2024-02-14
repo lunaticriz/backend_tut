@@ -1,6 +1,5 @@
 import mongoose, { isValidObjectId } from "mongoose";
 import Video from "../models/video.model.js";
-import User from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -14,34 +13,40 @@ const getAllVideos = asyncHandler(async (req, res) => {
     const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query;
     //TODO: get all videos based on query, sort, pagination
     const match = {};
-    if (query) {
-      match.title = { $regex: new RegExp(query), $options: "i" };
-    }
-    // Construct aggregation pipeline
-    const pipeline = [];
-    pipeline.push({ $match: match });
-    return res.send(pipeline);
-    // Perform aggregation with pagination
-    const options = {
-      page: page,
-      limit: limit,
-    };
+    if (userId) match.owner = new mongoose.Types.ObjectId(userId);
+    if (query)
+      match.$or = [
+        { title: { $regex: query, $options: "i" } },
+        { description: { $regex: query, $options: "i" } },
+      ];
 
-    const { docs, totalDocs, totalPages } = await Video.aggregatePaginate(
-      pipeline,
-      options
-    );
+    const sort = sortBy
+      ? { [sortBy]: sortType === "desc" ? -1 : 1 }
+      : { createdAt: -1 };
 
+    const pipeline = [
+      { $match: match },
+      {
+        $facet: {
+          paginatedResults: [
+            { $sort: sort },
+            { $skip: (page - 1) * limit },
+            { $limit: limit },
+          ],
+          totalCount: [{ $count: "value" }],
+        },
+      },
+    ];
+    const [{ paginatedResults, totalCount }] = await Video.aggregate(pipeline);
+    console.log(totalCount);
     return res.status(200).json(
       new ApiResponse(
         200,
         {
-          totalDocuments: totalDocs,
-          totalPages: totalPages,
-          currentPage: page,
-          videos: docs,
+          paginatedResults,
+          totalCount: totalCount.length ? totalCount[0].value : 0,
         },
-        "Videos retrieved successfully"
+        "All videos fetched successfully"
       )
     );
   } catch (error) {

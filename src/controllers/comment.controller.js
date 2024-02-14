@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { isValidObjectId } from "mongoose";
 import Comment from "../models/comment.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
@@ -11,15 +11,73 @@ const getVideoComments = asyncHandler(async (req, res) => {
 });
 
 const addComment = asyncHandler(async (req, res) => {
-  // TODO: add a comment to a video
+  try {
+    const { videoId } = req.params;
+    const { content } = req.body;
+    if (!isValidObjectId(videoId)) {
+      throw new ApiError(400, "Invalid video id");
+    }
+    if (!content) {
+      throw new ApiError(400, "Content is required");
+    }
+
+    const comment = await Comment.create({
+      content,
+      video: videoId,
+      owner: req.user?._id,
+    });
+
+    if (!comment) {
+      throw new ApiError(400, "Unable to add comment");
+    }
+    return res
+      .status(201)
+      .json(new ApiResponse(201, comment, "Comment added successfully"));
+  } catch (error) {
+    throw new ApiError(400, error?.message || "Unable to add comment");
+  }
 });
 
 const updateComment = asyncHandler(async (req, res) => {
-  // TODO: update a comment
+  try {
+    const { commentId } = req.params;
+    const { content } = req.body;
+    if (!isValidObjectId(req.params.commentId)) {
+      throw new ApiError(400, "Invalid comment id");
+    }
+    if (!content) {
+      throw new ApiError(400, "Content is required");
+    }
+
+    const comment = await Comment.findByIdAndUpdate(
+      commentId,
+      {
+        content,
+      },
+      { new: true }
+    );
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, comment, "Comment updated successfully"));
+  } catch (error) {
+    throw new ApiError(400, error?.message || "Unable to update comment");
+  }
 });
 
 const deleteComment = asyncHandler(async (req, res) => {
-  // TODO: delete a comment
+  try {
+    const { commentId } = req.params;
+    if (!isValidObjectId(req.params.commentId)) {
+      throw new ApiError(400, "Invalid comment id");
+    }
+    await Comment.findByIdAndDelete(commentId);
+    return res
+      .status(200)
+      .json(new ApiResponse(200, {}, "Comment deleted successfully"));
+  } catch (error) {
+    throw new ApiError(400, error?.message || "Invalid comment id");
+  }
 });
 
 export { getVideoComments, addComment, updateComment, deleteComment };
