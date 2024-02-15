@@ -1,5 +1,6 @@
 import mongoose, { isValidObjectId } from "mongoose";
 import Video from "../models/video.model.js";
+import User from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -132,7 +133,16 @@ const getVideoById = asyncHandler(async (req, res) => {
     if (!isValidObjectId(videoId)) {
       throw new ApiError(400, "Invalid video id");
     }
-    const video = await Video.findById(videoId);
+    const video = await Video.findByIdAndUpdate(
+      videoId,
+      { $inc: { views: 1 } },
+      { new: true }
+    );
+    await User.findByIdAndUpdate(
+      video.owner,
+      { $addToSet: { watchHistory: videoId } },
+      { new: true }
+    );
     return res
       .status(200)
       .json(new ApiResponse(200, video, "Video fetched successfully."));
