@@ -113,40 +113,43 @@ const toggleTweetLike = asyncHandler(async (req, res) => {
 });
 
 const getLikedVideos = asyncHandler(async (req, res) => {
-  //TODO: get all liked videos
-  const likedVideos = await Like.aggregate([
-    { $match: { likedBy: new mongoose.Types.ObjectId(req.user?._id) } },
-    { $group: { _id: "$video" } },
-    {
-      $lookup: {
-        from: "videos",
-        localField: "_id",
-        foreignField: "_id",
-        as: "videoDetails",
+  try {
+    //TODO: get all liked videos
+    const likedVideos = await Like.aggregate([
+      { $match: { likedBy: new mongoose.Types.ObjectId(req.user?._id) } },
+      { $group: { _id: "$video" } },
+      {
+        $lookup: {
+          from: "videos",
+          localField: "_id",
+          foreignField: "_id",
+          as: "videoDetails",
+        },
       },
-    },
-    { $unwind: "$videoDetails" },
-    { $replaceRoot: { newRoot: "$videoDetails" } },
-    {
-      $group: {
-        _id: null,
-        likedVideos: { $push: "$$ROOT" },
-        totalLikedVideos: { $sum: 1 },
+      { $unwind: "$videoDetails" },
+      { $replaceRoot: { newRoot: "$videoDetails" } },
+      {
+        $group: {
+          _id: null,
+          likedVideos: { $push: "$$ROOT" },
+          totalLikedVideos: { $sum: 1 },
+        },
       },
-    },
-    {
-      $project: { _id: 0 },
-    },
-  ]);
-  if (likedVideos.length < 0) {
-    throw new ApiError(500, "Video not found");
+      {
+        $project: { _id: 0 },
+      },
+    ]);
+    if (likedVideos.length < 0) {
+      throw new ApiError(500, "Video not found");
+    }
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(200, likedVideos, "Liked videos fetched successfully.")
+      );
+  } catch (error) {
+    throw new ApiError(500, error?.message || "Something went wrong");
   }
-  return res
-    .status(200)
-    .json(
-      new ApiResponse(200, likedVideos, "Liked videos fetched successfully.")
-    );
-  res.send(likedVideos);
 });
 
 export { toggleCommentLike, toggleTweetLike, toggleVideoLike, getLikedVideos };
