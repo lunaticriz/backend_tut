@@ -121,7 +121,7 @@ const deletePlaylist = asyncHandler(async (req, res) => {
     if (!playlistId) {
       throw new ApiError(400, "playlistId is required");
     }
-    await Playlist.findByIdAndDelete(playlistId);
+    let r = await Playlist.findByIdAndDelete(playlistId);
     return res
       .status(200)
       .json(new ApiResponse(200, {}, "Playlist deleted successfully"));
