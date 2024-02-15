@@ -14,18 +14,37 @@ const getAllVideos = asyncHandler(async (req, res) => {
     //TODO: get all videos based on query, sort, pagination
     const match = {};
     if (userId) match.owner = new mongoose.Types.ObjectId(userId);
-    if (query)
+    if (query) {
       match.$or = [
         { title: { $regex: query, $options: "i" } },
         { description: { $regex: query, $options: "i" } },
       ];
-
+    }
+    match.$and = [{ isPublished: true }];
     const sort = sortBy
       ? { [sortBy]: sortType === "desc" ? -1 : 1 }
       : { createdAt: -1 };
 
     const pipeline = [
       { $match: match },
+      {
+        $lookup: {
+          from: "users",
+          localField: "owner",
+          foreignField: "_id",
+          as: "videoOwner",
+          pipeline: [
+            {
+              $project: {
+                _id: 0,
+                userName: 1,
+                fullName: 1,
+                avatar: 1,
+              },
+            },
+          ],
+        },
+      },
       {
         $facet: {
           paginatedResults: [
@@ -34,6 +53,11 @@ const getAllVideos = asyncHandler(async (req, res) => {
             { $limit: limit },
           ],
           totalCount: [{ $count: "value" }],
+        },
+      },
+      {
+        $addFields: {
+          userName: "$videoOwner.userName",
         },
       },
     ];
@@ -173,28 +197,43 @@ const deleteVideo = asyncHandler(async (req, res) => {
 });
 
 const togglePublishStatus = asyncHandler(async (req, res) => {
-  const { videoId } = req.params;
-  if (!isValidObjectId(videoId)) {
-    throw new ApiError(400, "Invalid video id");
-  }
+  try {
+    const { videoId } = req.params;
+    if (!isValidObjectId(videoId)) {
+      throw new ApiError(400, "Invalid video id");
+    }
 
-  const video = await Video.findByIdAndUpdate(
-    videoId,
-    {
-      $set: {
-        isPublished: req.body.status,
+    const video = await Video.findById(videoId).select("owner isPublished");
+    const videoOwner = new mongoose.Types.ObjectId(video.owner);
+    const loggedInUser = new mongoose.Types.ObjectId(req.user?._id);
+    if (!videoOwner.equals(loggedInUser)) {
+      throw new ApiError(400, "You don't have right to change publish status.");
+    }
+
+    const togglePublishStatus = await Video.findByIdAndUpdate(
+      videoId,
+      {
+        $set: {
+          isPublished: !video.isPublished,
+        },
       },
-    },
-    { new: true }
-  );
-  if (!video) {
-    throw new ApiError(500, "Internal server error, please try again");
-  }
-  return res
-    .status(200)
-    .json(
-      new ApiResponse(200, video, "Video publish staus toggles successfully.")
+      { new: true }
     );
+    if (!togglePublishStatus) {
+      throw new ApiError(500, "Internal server error, please try again");
+    }
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          togglePublishStatus,
+          "Video publish staus toggles successfully."
+        )
+      );
+  } catch (error) {
+    throw new ApiError(400, error?.message || "Unexpected error");
+  }
 });
 
 export {
