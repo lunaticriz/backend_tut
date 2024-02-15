@@ -228,7 +228,7 @@ const togglePublishStatus = asyncHandler(async (req, res) => {
         new ApiResponse(
           200,
           togglePublishStatus,
-          "Video publish staus toggles successfully."
+          "Video publish status toggles successfully."
         )
       );
   } catch (error) {
