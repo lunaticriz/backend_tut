@@ -1,6 +1,7 @@
 import cookieParser from "cookie-parser";
 import express from "express";
 import cors from "cors";
+import swagger from "./swagger.js";
 
 const app = express();
 
@@ -37,4 +38,7 @@ app.use("/api/v1/likes", likeRouter);
 app.use("/api/v1/playlist", playlistRouter);
 app.use("/api/v1/subscriptions", subscriptionRouter);
 app.use("/api/v1/dashboard", dashboardRouter);
+
+// Swagger not working for now so we gonna ignore it as of now
+swagger(app);
 export { app };
