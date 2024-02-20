@@ -1,26 +1,7 @@
 import request from "supertest";
-import mongoose from "mongoose";
 import { app } from "../app";
-import { DB_NAME } from "../constant.js";
-import { upload } from "../middlewares/multer.middleware.js";
-
-jest.mock(upload, () => {
-  return (req, res, next) => {
-    req.file = {
-      path: "C:/Users/Dell/Downloads/earth.jpg", // Mock the file path
-    };
-    next();
-  };
-});
 
 describe("POST /users/register", () => {
-  beforeAll(async () => {
-    await mongoose.connect(`mongodb://localhost:27017/${DB_NAME}`);
-  });
-
-  afterAll(async () => {
-    await mongoose.disconnect();
-  });
   test("Should create a user", async () => {
     const userDetails = {
       userName: "sam11",

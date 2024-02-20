@@ -1,7 +1,8 @@
 import cookieParser from "cookie-parser";
 import express from "express";
 import cors from "cors";
-import swagger from "./swagger.js";
+import swaggerUi from "swagger-ui-express";
+import swagger from "../swagger_output.json" assert { type: "json" };
 
 const app = express();
 
@@ -39,6 +40,5 @@ app.use("/api/v1/playlist", playlistRouter);
 app.use("/api/v1/subscriptions", subscriptionRouter);
 app.use("/api/v1/dashboard", dashboardRouter);
 
-// Swagger not working for now so we gonna ignore it as of now
-swagger(app);
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swagger));
 export { app };

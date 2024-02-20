@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "nodemon -r dotenv/config --experimental-json-modules src/index.js",
-    "test": "jest" 
+    "test": "jest"
   },
   "keywords": [
     "backend",
@@ -17,7 +17,9 @@
   "devDependencies": {
     "jest": "^29.7.0",
     "nodemon": "^3.0.3",
-    "supertest": "^6.3.4"
+    "supertest": "^6.3.4",
+    "swagger-autogen": "^2.23.7",
+    "swagger-ui-express": "^5.0.0"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -29,8 +31,6 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.1.1",
     "mongoose-aggregate-paginate-v2": "^1.0.7",
-    "multer": "^1.4.5-lts.1",
-    "swagger-jsdoc": "^6.2.8",
-    "swagger-ui-express": "^5.0.0"
+    "multer": "^1.4.5-lts.1"
   }
 }
