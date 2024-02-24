@@ -11,53 +11,41 @@
     "http"
   ],
   "paths": {
-    "videos/{videoId}": {
-      "get": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "videoId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      },
+    "/users/register": {
       "post": {
-        "description": "",
+        "description": "To register a new user",
+        "consumes": "multipart/form-data",
         "parameters": [
           {
-            "name": "videoId",
-            "in": "path",
-            "required": true,
+            "name": "userName",
+            "in": "formData",
             "type": "string"
           },
           {
-            "name": "authorization",
-            "in": "header",
+            "name": "email",
+            "in": "formData",
             "type": "string"
           },
           {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "content": {
-                  "example": "any"
-                }
-              }
-            }
+            "name": "fullName",
+            "in": "formData",
+            "type": "string"
+          },
+          {
+            "name": "password",
+            "in": "formData",
+            "type": "string"
+          },
+          {
+            "name": "avatar",
+            "in": "formData",
+            "type": "file"
+          },
+          {
+            "name": "coverImage",
+            "in": "formData",
+            "type": "file",
+            "required": false
           }
         ],
         "responses": {
@@ -65,52 +53,25 @@
             "description": "Created"
           }
         }
-      },
-      "delete": {
-        "description": "",
+      }
+    },
+    "/users/login": {
+      "post": {
+        "description": "You can login with username or email along with password.",
         "parameters": [
-          {
-            "name": "videoId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      },
-      "patch": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "videoId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "type": "string"
-          },
           {
             "name": "body",
             "in": "body",
             "schema": {
               "type": "object",
               "properties": {
-                "title": {
+                "userName": {
                   "example": "any"
                 },
-                "description": {
+                "email": {
+                  "example": "any"
+                },
+                "password": {
                   "example": "any"
                 }
               }
@@ -124,16 +85,10 @@
         }
       }
     },
-    "comments/c/{commentId}": {
-      "delete": {
-        "description": "",
+    "/users/logout": {
+      "post": {
+        "description": "With this API you can logout from app or web app.",
         "parameters": [
-          {
-            "name": "commentId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
           {
             "name": "authorization",
             "in": "header",
@@ -145,16 +100,36 @@
             "description": "OK"
           }
         }
-      },
-      "patch": {
-        "description": "",
+      }
+    },
+    "/users/refresh-token": {
+      "post": {
+        "description": "For refresh token",
         "parameters": [
           {
-            "name": "commentId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "refreshToken": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/users/change-password": {
+      "post": {
+        "description": "Changd password",
+        "parameters": [
           {
             "name": "authorization",
             "in": "header",
@@ -166,7 +141,10 @@
             "schema": {
               "type": "object",
               "properties": {
-                "content": {
+                "oldPassword": {
+                  "example": "any"
+                },
+                "newPassword": {
                   "example": "any"
                 }
               }
@@ -180,9 +158,9 @@
         }
       }
     },
-    "dashboard/stats": {
+    "/users/current-user": {
       "get": {
-        "description": "",
+        "description": "Getting the current user details",
         "parameters": [
           {
             "name": "authorization",
@@ -197,9 +175,100 @@
         }
       }
     },
-    "dashboard/videos": {
+    "/users/update-user-details": {
+      "patch": {
+        "description": "Update user details",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "fullName": {
+                  "example": "any"
+                },
+                "email": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/users/avatar": {
+      "patch": {
+        "description": "Can change the avatar of your profile.",
+        "consumes": "multipart/form-data",
+        "parameters": [
+          {
+            "name": "avatar",
+            "in": "formData",
+            "type": "file"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/users/cover-image": {
+      "patch": {
+        "description": "Can change the cover image of your profile.",
+        "consumes": "multipart/form-data",
+        "parameters": [
+          {
+            "name": "coverImage",
+            "in": "formData",
+            "type": "file"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/users/channel/{userName}": {
       "get": {
-        "description": "",
+        "description": "To get the user channels with the help of username.",
+        "parameters": [
+          {
+            "name": "userName",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/users/watch-history": {
+      "get": {
+        "description": "Getting watch history.",
         "parameters": [
           {
             "name": "authorization",
@@ -214,7 +283,7 @@
         }
       }
     },
-    "videos/": {
+    "/videos/": {
       "get": {
         "description": "",
         "parameters": [
@@ -262,7 +331,96 @@
       },
       "post": {
         "description": "",
+        "consumes": "multipart/form-data",
         "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "title",
+            "in": "formData",
+            "type": "string"
+          },
+          {
+            "name": "description",
+            "in": "formData",
+            "type": "string"
+          },
+          {
+            "name": "videoFile",
+            "in": "formData",
+            "type": "file"
+          },
+          {
+            "name": "thumbnail",
+            "in": "formData",
+            "type": "file"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "201": {
+            "description": "Created"
+          }
+        }
+      }
+    },
+    "/videos/{videoId}": {
+      "get": {
+        "description": "Getting video details of particular video.",
+        "parameters": [
+          {
+            "name": "videoId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "delete": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "videoId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "patch": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "videoId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
           {
             "name": "authorization",
             "in": "header",
@@ -287,14 +445,180 @@
         "responses": {
           "200": {
             "description": "OK"
-          },
-          "201": {
-            "description": "Created"
           }
         }
       }
     },
-    "likes/toggle/v/{videoId}": {
+    "/videos/toggle/publish/{videoId}": {
+      "patch": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "videoId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/comments/{videoId}": {
+      "get": {
+        "description": "Getting videos comments",
+        "parameters": [
+          {
+            "name": "videoId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "post": {
+        "description": "To create a comment on videos",
+        "parameters": [
+          {
+            "name": "videoId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "content": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/comments/c/{commentId}": {
+      "delete": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "commentId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "patch": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "commentId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "content": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/dashboard/stats": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/dashboard/videos": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/likes/toggle/v/{videoId}": {
       "post": {
         "description": "",
         "parameters": [
@@ -320,7 +644,7 @@
         }
       }
     },
-    "likes/toggle/c/{commentId}": {
+    "/likes/toggle/c/{commentId}": {
       "post": {
         "description": "",
         "parameters": [
@@ -346,7 +670,7 @@
         }
       }
     },
-    "likes/toggle/t/{tweetId}": {
+    "/likes/toggle/t/{tweetId}": {
       "post": {
         "description": "",
         "parameters": [
@@ -372,7 +696,7 @@
         }
       }
     },
-    "playlist/{playlistId}": {
+    "/playlist/{playlistId}": {
       "get": {
         "description": "",
         "parameters": [
@@ -437,7 +761,7 @@
         }
       }
     },
-    "playlist/add/{videoId}/{playlistId}": {
+    "/playlist/add/{videoId}/{playlistId}": {
       "patch": {
         "description": "",
         "parameters": [
@@ -466,7 +790,7 @@
         }
       }
     },
-    "playlist/remove/{videoId}/{playlistId}": {
+    "/playlist/remove/{videoId}/{playlistId}": {
       "patch": {
         "description": "",
         "parameters": [
@@ -495,7 +819,7 @@
         }
       }
     },
-    "playlist/user/{userId}": {
+    "/playlist/user/{userId}": {
       "get": {
         "description": "",
         "parameters": [
@@ -518,7 +842,7 @@
         }
       }
     },
-    "subscriptions/c/{channelId}": {
+    "/subscriptions/c/{channelId}": {
       "get": {
         "description": "",
         "parameters": [
@@ -562,7 +886,7 @@
         }
       }
     },
-    "subscriptions/u/{subscriberId}": {
+    "/subscriptions/u/{subscriberId}": {
       "get": {
         "description": "",
         "parameters": [
@@ -585,7 +909,7 @@
         }
       }
     },
-    "tweets/{tweetId}": {
+    "/tweets/{tweetId}": {
       "delete": {
         "description": "",
         "parameters": [
@@ -632,291 +956,6 @@
                 }
               }
             }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/users/register": {
-      "post": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "userName": {
-                  "example": "any"
-                },
-                "email": {
-                  "example": "any"
-                },
-                "fullName": {
-                  "example": "any"
-                },
-                "password": {
-                  "example": "any"
-                },
-                "avatar": {
-                  "example": "any"
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "Created"
-          }
-        }
-      }
-    },
-    "/users/login": {
-      "post": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "userName": {
-                  "example": "any"
-                },
-                "email": {
-                  "example": "any"
-                },
-                "password": {
-                  "example": "any"
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/users/logout": {
-      "post": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/users/refresh-token": {
-      "post": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "refreshToken": {
-                  "example": "any"
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/users/change-password": {
-      "post": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "type": "string"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "oldPassword": {
-                  "example": "any"
-                },
-                "newPassword": {
-                  "example": "any"
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/users/current-user": {
-      "get": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/users/update-user-details": {
-      "patch": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "type": "string"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "fullName": {
-                  "example": "any"
-                },
-                "email": {
-                  "example": "any"
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/users/avatar": {
-      "patch": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/users/cover-image": {
-      "patch": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/users/channel/{userName}": {
-      "get": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "userName",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/users/watch-history": {
-      "get": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "videos/toggle/publish/{videoId}": {
-      "patch": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "videoId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "type": "string"
           }
         ],
         "responses": {
