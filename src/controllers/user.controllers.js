@@ -8,6 +8,7 @@ import {
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
+import sendmail from "../utils/sendmail.js";
 
 const generateAccessTokenAndRefreshToken = async (userId) => {
   try {
@@ -71,6 +72,18 @@ const registerUser = asyncHandler(async (req, res) => {
     if (!createdUser)
       throw new ApiError(500, "Something went wrong, please try again");
 
+    const mailOptions = {
+      from: process.env.GMAIL_USER,
+      to: email,
+      subject: "User Creation",
+      text: "Thank you for choosing us, your account has been created.",
+    };
+
+    sendmail.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        throw new ApiError(500, "Something went wrong, please try again");
+      }
+    });
     return res
       .status(201)
       .json(new ApiResponse(200, createdUser, "User created successfully"));
