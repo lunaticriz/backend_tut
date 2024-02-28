@@ -26,13 +26,11 @@ const generateAccessTokenAndRefreshToken = async (userId) => {
 const registerUser = asyncHandler(async (req, res) => {
   try {
     const { userName, email, fullName, password } = req.body;
-    if (
-      [userName, email, fullName, password].some((field) => {
-        field?.trim() === "";
-      })
-    ) {
-      throw new ApiError(400, "All fields are required");
-    }
+    [userName, email, fullName, password].some((field) => {
+      if (field?.trim() === "") {
+        throw new ApiError(400, "All fields are required");
+      }
+    });
 
     const userExists = await User.findOne({
       $or: [{ email }, { userName }],
@@ -87,8 +85,8 @@ const registerUser = asyncHandler(async (req, res) => {
     return res
       .status(201)
       .json(new ApiResponse(200, createdUser, "User created successfully"));
-  } catch (err) {
-    throw err;
+  } catch (error) {
+    throw new ApiError(400, error?.message || "Unexpected error");
   }
 });
 
