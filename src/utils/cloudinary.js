@@ -1,6 +1,5 @@
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
-import logger from "./logger";
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -17,7 +16,6 @@ const uploadCloudinary = async (localPath) => {
     fs.unlinkSync(localPath);
     return result;
   } catch (error) {
-    logger.error(error);
     fs.unlinkSync(localPath);
     throw new Error(error?.message);
   }
@@ -37,7 +35,6 @@ const removeFileFromCloudinary = async (cloudinaryPath, resourceType = "") => {
     result = await cloudinary.uploader.destroy(publicId);
     return result;
   } catch (error) {
-    logger.error(error);
     throw new Error(error?.message);
   }
 };

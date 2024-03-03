@@ -1,5 +1,5 @@
 import request from "supertest";
-import { app } from "../app";
+import { app } from "../server.js";
 
 describe("POST /users/register", () => {
   test("Should create a user", async () => {

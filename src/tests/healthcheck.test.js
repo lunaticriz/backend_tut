@@ -1,5 +1,5 @@
 import request from "supertest";
-import { app } from "../app.js";
+import { app } from "../server.js";
 
 /**
  * To run test use this command
