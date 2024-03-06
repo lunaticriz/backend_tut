@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node -r dotenv/config --experimental-json-modules src/app.js",
     "dev": "nodemon -r dotenv/config --experimental-json-modules src/app.js",
-    "test": "jest"
+    "test": "mocha --timeout 0 --require esm 'src/tests/*.test.js'"
   },
   "keywords": [
     "backend",
@@ -16,8 +16,11 @@
   "author": "Mohammad Rizwan",
   "license": "ISC",
   "devDependencies": {
-    "jest": "^29.7.0",
+    "chai": "^5.1.0",
+    "esm": "^3.2.25",
+    "mocha": "^10.3.0",
     "nodemon": "^3.0.3",
+    "sinon": "^17.0.1",
     "supertest": "^6.3.4",
     "swagger-autogen": "^2.23.7",
     "swagger-ui-express": "^5.0.0"
